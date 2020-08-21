@@ -35,14 +35,13 @@ steps:
       - 'sed s#yurikoster1/go-hpa#gcr.io/$PROJECT_ID/go_hpa:${SHORT_SHA}#g k8s/go/deployment.yml > k8s/go/deployment_prod.yml'
       - 'cat k8s/go/deployment_prod.yml'
   - id: 'Deploy k8s'
-      name: 'gcr.io/cloud-builders/kubectl'
-      args:
-        - 'apply'
-        - '-f'
-        - 'k8s/go/deployment_prod.yml'
-      env:
-        - 'CLOUDSDK_COMPUTE_ZONE=southamerica-east1-a '
-        - 'CLOUDSDK_CONTAINER_CLUSTER=devops6-go'
+    name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'k8s/go/deployment_prod.yml'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=southamerica-east1-a '
+      - 'CLOUDSDK_CONTAINER_CLUSTER=devops6-go'
 images:
   - 'gcr.io/$PROJECT_ID/go_hpa:latest'
-  - 'gcr.io/$PROJECT_ID/go_hpa:${_IMAGE_VERSION}'
