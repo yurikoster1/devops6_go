@@ -1,0 +1,74 @@
+version: "3.7"
+services:
+
+  #GO
+  devops_6_app:
+    build:
+      context: .
+      dockerfile: ./.docker/go/Dockerfile
+      target: prod
+    image: yurikoster1/${COMPOSE_PROJECT_NAME}_go
+    networks:
+      - devops_6_app-network
+    container_name: ${COMPOSE_PROJECT_NAME}_go
+    ports:
+      - "8000:8000"
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+  #NIGNX
+  devops_6_nginx:
+    build:
+      context: .docker/nginx
+      dockerfile: Dockerfile
+    entrypoint: " dockerize -wait http://devops_6_app:8000 -timeout 40s /docker-entrypoint.sh"
+    command: [ "nginx", "-g", "daemon off;" ]
+    networks:
+      - devops_6_app-network
+    restart: unless-stopped
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx
+    tty: true
+    environment:
+      - GO_PATH=devops_6_app
+      - GO_PORT=8000
+    ports:
+      - "${GO_PORT}:80"
+    depends_on:
+      - "devops_6_app"
+    volumes:
+      - ./.docker/nginx/templates:/etc/nginx/templates
+      - ./www:/usr/share/nginx/html
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+#Getter
+  devops_6_getter:
+    build:
+      context: ./.docker/busybox
+      dockerfile: Dockerfile
+    image: yurikoster1/${COMPOSE_PROJECT_NAME}_getter
+    depends_on:
+      - "devops_6_app"
+    networks:
+      - devops_6_app-network
+    container_name: ${COMPOSE_PROJECT_NAME}_busybox
+    environment:
+      - GO_SERVICE_URL=devops_6_app
+      - GO_SERVICE_PORT=8000
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+
+
+networks:
+  devops_6_app-network:
+    driver: bridge
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+
+volumes:
+  devops_6_dbdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${PWD}/.docker/mysql/data"
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}

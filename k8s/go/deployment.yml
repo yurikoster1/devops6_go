@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops6-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops6-go
+  template:
+    metadata:
+      labels:
+        app: devops6-go
+    spec:
+      containers:
+        - name: go
+          image: yurikoster1/go-hpa
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "100m"
